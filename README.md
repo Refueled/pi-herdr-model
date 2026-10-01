@@ -8,13 +8,17 @@ Show **Pi's selected model identifier and model-family logo** in [Herdr Radar](h
 [Gemini logo]   gemini-3.8-flash
 ```
 
-Pi remains the actual agent. This package only reports display metadata; it does not replace Herdr's official Pi integration or Radar's state tracking. No Radar fork is needed.
+**Required setup: [Pi](https://pi.dev) running inside [Herdr](https://herdr.dev), with [Herdr Radar](https://github.com/hhdebb/herdr-radar) installed.** This is an integration extension, not a standalone agent, terminal, or replacement for Radar.
+
+Pi remains the actual agent. This package only reports display metadata; it does not replace Herdr's official Pi integration or Radar's state tracking. No Radar fork is needed. Users install it through `pi install`, never `npx`.
 
 ## Requirements
 
 - Pi with the `model_select` extension event and `ctx.mode` (tested with `@earendil-works/pi-coding-agent` 0.99.x).
 - Herdr 0.9.3+ and a Pi TUI running inside a Herdr pane.
-- Radar with `--display-agent` support and the `$logo` / `$state_*` token layout (tested against the current Radar implementation).
+- Herdr Radar with `--display-agent`, the `render_hook` title hook, and the `$logo` / `$title_*` token layout (tested against the current Radar implementation).
+- Node.js 20+.
+- **Recommended:** Herdr's official Pi integration enabled for reliable agent lifecycle/session reporting. Follow the [Herdr integration setup](https://herdr.dev/docs/integrations/); this package does not install or replace it.
 - For vendor icons: Radar's icon font or a compatible patched Nerd Font, and Radar `variant = "font"`. Without the font, Radar can use its text variant; the example row's PUA brand-color rules then do not apply.
 
 ## Install
@@ -117,13 +121,22 @@ npm pack --dry-run
 
 Tests cover model mapping, metadata ownership, TUI/headless behavior, reload/shutdown, coalescing, leases, and socket failures. Tests use isolated fake sockets, never a running Herdr server.
 
-The package uses Pi's explicit extension manifest and the `pi-package` keyword. After publishing to npm, it is eligible for [Pi package gallery](https://pi.dev/packages) discovery:
+The [Pi package catalog](https://pi.dev/packages) lists npm-hosted Pi packages. Our manifest already includes Pi's explicit extension entry and the `pi-package` discovery keyword. Publish to npm to make the package eligible for catalog discovery; the catalog may take time to refresh. There is no `npx` executable or `npx` installation step.
+
+From the repository, the maintainer publishes with:
 
 ```sh
+npm login
 npm publish --access public
-# After npm publication:
+```
+
+After npm publication, users install through Pi:
+
+```sh
 pi install npm:pi-herdr-model
 ```
+
+Until then, the GitHub installation above works without an npm account.
 
 There are no install/postinstall hooks. The npm files allowlist excludes tests, development dependencies, configs, logs, and local session data. GitHub publication is separate from npm publication.
 

@@ -45,7 +45,7 @@
     "typescript": "^5.9.0"
   },
   "scripts": {
-    "test": "tsx --test test/*.test.ts",
+    "test": "node scripts/run-tests.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm test",
     "prepublishOnly": "npm run check"
