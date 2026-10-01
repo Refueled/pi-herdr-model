@@ -1,18 +1,43 @@
 {
   "name": "pi-herdr-model",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Show Pi's selected model and vendor logo in Herdr Radar without changing agent identity.",
   "type": "module",
   "license": "MIT",
   "author": "Refueled",
-  "repository": { "type": "git", "url": "git+https://github.com/Refueled/pi-herdr-model.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Refueled/pi-herdr-model.git"
+  },
   "homepage": "https://github.com/Refueled/pi-herdr-model#readme",
-  "bugs": { "url": "https://github.com/Refueled/pi-herdr-model/issues" },
-  "keywords": ["pi-package", "pi", "herdr", "herdr-radar", "model", "extension"],
-  "engines": { "node": ">=20" },
-  "files": ["src/", "radar/", "README.md", "LICENSE"],
-  "pi": { "extensions": ["./src/index.ts"] },
-  "peerDependencies": { "@earendil-works/pi-coding-agent": "*" },
+  "bugs": {
+    "url": "https://github.com/Refueled/pi-herdr-model/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi",
+    "herdr",
+    "herdr-radar",
+    "model",
+    "extension"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "src/",
+    "radar/",
+    "README.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "^0.99.1",
     "@types/node": "^22.0.0",
@@ -25,5 +50,7 @@
     "check": "npm run typecheck && npm test",
     "prepublishOnly": "npm run check"
   },
-  "publishConfig": { "access": "public" }
+  "publishConfig": {
+    "access": "public"
+  }
 }

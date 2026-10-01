@@ -33,27 +33,30 @@ For local development:
 pi install /absolute/path/to/pi-herdr-model
 ```
 
-### Render the model name in Radar
+### Render the model name without losing Radar's spinner
 
-Reporting the model and vendor is automatic. Rendering the custom model text requires a Pi-specific sidebar row in Herdr's config:
+Reporting the model and vendor is automatic. To render model names while preserving Radar's animated spinner, done tick, blocked pulse, and lifecycle colors, enable the supplied **title render hook** in Radar's own `config.toml` (locate it with `herdr plugin config-dir hhdebb.herdr-radar`):
 
-- Windows: `%APPDATA%\herdr\config.toml`
-- Linux/macOS: `~/.config/herdr/config.toml`
-
-Merge the `pi = [...]` entry from [`radar/pi-model-row.toml`](radar/pi-model-row.toml) into your **existing** `[ui.sidebar.agents.rows_by_agent]` table. Declare that table only once.
-
-**Important:** Radar owns tables inside its `# >>> herdr-radar sidebar block` markers. Its next configure action replaces those tables. To maintain custom layouts, move the sidebar tables outside those markers (or remove just the sidebar marker comments). Radar explicitly preserves user-owned tables. Back up your config first; this package never edits it automatically.
-
-The supplied row keeps Radar's grouping, model-vendor logos, and held lifecycle marks, and replaces the session-title text with `$pi_model`. Working uses Radar's ring mark rather than its animated title spinner. Existing non-Pi rows stay unchanged. If you prefer your own theme colors, adapt your existing Pi row: replace `$title_*` with `$state_*`, preserve their styling, and append `$pi_model` to that row.
-
-Validate and apply presentation changes without stopping any panes:
-
-```sh
-herdr config check
-herdr server reload-config
+```toml
+render_hook = "/absolute/path/to/pi-herdr-model/radar/model-title.cjs"
 ```
 
-Do **not** use `herdr server stop` for this setup.
+Use the actual installed package location (`pi list` helps locate package sources). On Windows, use forward slashes or a TOML single-quoted path. If you already use a render hook, compose its exports with this hook rather than replacing it silently.
+
+Radar loads render hooks once per display-daemon start. Restart **only Radar's plugin daemon** once after enabling the hook:
+
+```sh
+herdr plugin action invoke hhdebb.herdr-radar.state-stop
+herdr plugin action invoke hhdebb.herdr-radar.state-start
+```
+
+These plugin actions are separate from Herdr's server. Do **not** run `herdr server stop`; keep Herdr and Pi sessions alive.
+
+Keep your existing Radar sidebar layout and its `$title_working`, `$title_done`, `$title_blocked`, etc. tokens. The hook replaces only the title body with the model ID, and Radar prepends its normal animation/marks. No Pi-specific row is required. [`radar/pi-model-row.toml`](radar/pi-model-row.toml) is an optional example for custom layouts.
+
+**Upgrading from 0.1.0:** remove the package's Pi-specific `rows_by_agent.pi` override to use your usual Radar row again, or change its `$state_*` tokens back to `$title_*` and remove the standalone `$pi_model` cell. That old row displayed static rings instead of Radar's title spinner.
+
+If editing user-owned sidebar tables, keep them outside Radar's managed marker comments and declare each TOML table only once. Validate and live-reload presentation changes with `herdr config check` followed by `herdr server reload-config`. This package never edits either config automatically.
 
 ## Behavior
 
@@ -62,7 +65,7 @@ Do **not** use `herdr server stop` for this setup.
 - Refreshes its metadata lease every 20 seconds; stale metadata expires after 60 seconds.
 - Coalesces rapid model changes and retries after transient delivery failures.
 - Does nothing in RPC, JSON, or print mode, or outside a Herdr-managed pane.
-- Closes sockets/timers and clears only its own metadata on orderly shutdown/reload.
+- Closes sockets/timers and clears only its own metadata/title cache on orderly shutdown/reload.
 - Does not change terminal titles, rename panes/tabs, or report agent lifecycle state.
 
 Run `/herdr-model` to refresh the metadata and inspect the last delivery status.
@@ -88,9 +91,11 @@ A small set of single-vendor providers is used as a fallback. Generic OpenAI-com
 
 ## Privacy and permissions
 
-No runtime dependencies, subprocesses, telemetry, HTTP requests, prompts, transcripts, credentials, or session-file reads. The extension consumes only the selected model's ID/provider and inherited `HERDR_*` connection context, then sends bounded JSON-line requests to Herdr's local Unix socket or Windows named pipe.
+No runtime dependencies, subprocesses, telemetry, HTTP requests, prompts, transcripts, credentials, or session-file reads. The extension consumes the selected model's ID/provider and inherited Herdr/state-directory context, then sends bounded JSON-line requests to Herdr's local Unix socket or Windows named pipe.
 
-Model IDs and provider labels are visible to Herdr and its connected clients. Like all Pi extensions, this code runs with Pi's OS permissions; review it before installing.
+For Radar's synchronous title hook, successful reports also atomically write a tiny, leased model-only cache under `$XDG_STATE_HOME/pi-herdr-model`, `%LOCALAPPDATA%/pi-herdr-model` on Windows, or `~/.local/state/pi-herdr-model` elsewhere. Filenames hash the socket and pane identity. Caches expire after 60 seconds and are removed on orderly shutdown; leftover files after a crash can be deleted safely. The hook reads only these bounded cache records, never a Pi session file. Missing, expired, or invalid records preserve Radar's original title.
+
+Model IDs and provider labels are visible to Herdr and its connected clients; selected model IDs also reside in this local cache. Like all Pi extensions, this code runs with Pi's OS permissions; review it before installing.
 
 Fonts and vendor artwork are **not distributed** by this package. The optional sidebar example references Radar's existing codepoints. Vendor marks belong to their respective owners.
 
@@ -100,7 +105,7 @@ Fonts and vendor artwork are **not distributed** by this package. The optional s
 pi remove git:github.com/Refueled/pi-herdr-model
 ```
 
-Reload each Pi session and restore the prior Pi sidebar row (or remove your `rows_by_agent.pi` override). Only this package's metadata is cleared; if a process exits abruptly, its lease expires within 60 seconds.
+Reload each Pi session, remove the `render_hook` setting (or restore your previous composed hook), and restart only Radar's display daemon to unload it. Restore any optional customized Pi sidebar row. Only this package's metadata/cache is cleared; if a process exits abruptly, its leases expire within 60 seconds.
 
 ## Development and publishing
 

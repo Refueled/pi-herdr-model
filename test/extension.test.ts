@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
+import fs from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import extension from '../src/index.js';
@@ -38,13 +39,15 @@ test('TUI reports startup and model changes without reporting agent state', asyn
     });
   });
   await new Promise<void>(resolve => server.listen(endpoint, resolve));
-  const old = Object.fromEntries(['HERDR_ENV', 'HERDR_PANE_ID', 'HERDR_SOCKET_PATH'].map(key => [key, process.env[key]]));
-  Object.assign(process.env, { HERDR_ENV: '1', HERDR_PANE_ID: 'test:p1', HERDR_SOCKET_PATH: endpoint });
+  const state = await fs.mkdtemp(path.join(os.tmpdir(), 'pi-herdr-model-state-'));
+  const old = Object.fromEntries(['HERDR_ENV', 'HERDR_PANE_ID', 'HERDR_SOCKET_PATH', 'XDG_STATE_HOME'].map(key => [key, process.env[key]]));
+  Object.assign(process.env, { HERDR_ENV: '1', HERDR_PANE_ID: 'test:p1', HERDR_SOCKET_PATH: endpoint, XDG_STATE_HOME: state });
   const { handlers } = harness();
   t.after(async () => {
     await handlers.get('session_shutdown')!({}, {});
     for (const [key, value] of Object.entries(old)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; }
     await new Promise<void>(resolve => server.close(() => resolve()));
+    await fs.rm(state, { recursive: true, force: true });
   });
   const ctx = { mode: 'tui', model: { id: 'gpt-5.6-sol', provider: 'custom' } };
   await handlers.get('session_start')!({}, ctx);

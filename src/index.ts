@@ -1,5 +1,6 @@
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { modelMetadata } from './model.js';
+import { withTitleCache } from './cache.js';
 import { ModelReporter } from './reporter.js';
 import { herdrEnvironment, socketSender } from './transport.js';
 
@@ -16,7 +17,7 @@ export default function herdrModel(pi: ExtensionAPI): void {
     const env = herdrEnvironment(process.env);
     if (!env) return;
     if (reporter) await reporter.stop();
-    reporter = new ModelReporter(env.paneId, socketSender(env.endpoint));
+    reporter = new ModelReporter(env.paneId, withTitleCache(socketSender(env.endpoint)));
     await reporter.update(ctx.model);
     reporter.startHeartbeat();
   });

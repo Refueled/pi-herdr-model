@@ -1,6 +1,8 @@
-# Merge the `pi = [...]` entry into your EXISTING rows_by_agent table.
-# Do not declare this table twice. With Radar, keep these user-owned tables
-# outside its managed marker comments so a configure refresh cannot replace them.
+# OPTIONAL example: keep your existing Radar layout if you already have one.
+# The model-title.cjs render hook supplies the model; title tokens retain Radar's
+# animated spinner, done tick, and blocked pulse. Do not replace them with state tokens.
+# Merge this entry into your EXISTING table; never declare that table twice.
+# Keep custom tables outside Radar's managed markers to prevent overwrites.
 [ui.sidebar.agents.rows_by_agent]
 pi = [
   ["$group_parent"],
@@ -22,9 +24,8 @@ pi = [
       { contains = "\uE1B0", fg = "#615ced" }
     ] },
     { token = "$logo_stale", dim = true },
-    "$state_working", "$state_done", "$state_blocked", "$state_idle_fresh",
-    "$state_idle", "$state_idle_stale", "$state_unknown",
-    "$pi_model"
+    "$title_working", "$title_done", "$title_blocked", "$title_idle_fresh",
+    "$title_idle", "$title_idle_stale", "$title_unknown"
   ],
   ["$gap"]
 ]
