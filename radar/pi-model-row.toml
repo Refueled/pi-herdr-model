@@ -1,0 +1,30 @@
+# Merge the `pi = [...]` entry into your EXISTING rows_by_agent table.
+# Do not declare this table twice. With Radar, keep these user-owned tables
+# outside its managed marker comments so a configure refresh cannot replace them.
+[ui.sidebar.agents.rows_by_agent]
+pi = [
+  ["$group_parent"],
+  ["$group", "$group_stale"],
+  [
+    "$split_mark",
+    { token = "$logo", rules = [
+      { contains = "\uE1A0", fg = "#d97757" },
+      { contains = "\uE1AD", fg = "#4d6bfe" },
+      { contains = "\uE1AE", fg = "#4285f4" },
+      { contains = "\uE1A6", fg = "#1783ff" },
+      { contains = "\uE1B0", fg = "#615ced" }
+    ] },
+    { token = "$logo_working", rules = [
+      { contains = "\uE1A0", fg = "#d97757" },
+      { contains = "\uE1AD", fg = "#4d6bfe" },
+      { contains = "\uE1AE", fg = "#4285f4" },
+      { contains = "\uE1A6", fg = "#1783ff" },
+      { contains = "\uE1B0", fg = "#615ced" }
+    ] },
+    { token = "$logo_stale", dim = true },
+    "$state_working", "$state_done", "$state_blocked", "$state_idle_fresh",
+    "$state_idle", "$state_idle_stale", "$state_unknown",
+    "$pi_model"
+  ],
+  ["$gap"]
+]
